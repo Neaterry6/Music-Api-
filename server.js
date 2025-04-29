@@ -16,9 +16,13 @@ app.get("/search", async (req, res) => {
 
     try {
         const response = await axios.get(`https://saavn.dev/api/search/songs?query=${query}`);
+        if (!response.data || response.data.results.length === 0) {
+            return res.status(404).json({ error: "❌ No songs found!" });
+        }
         res.json(response.data);
     } catch (error) {
-        res.status(500).json({ error: "Failed to fetch song data." });
+        console.error("❌ API Error:", error.message);
+        res.status(500).json({ error: "Failed to fetch song data. Check logs for more info!" });
     }
 });
 
@@ -29,7 +33,11 @@ app.get("/song/:id", async (req, res) => {
     try {
         const response = await axios.get(`https://saavn.dev/api/songs/${songId}`);
         const songData = response.data;
-        
+
+        if (!songData || !songData.download_url) {
+            return res.status(404).json({ error: "❌ Song not found or missing download URL!" });
+        }
+
         res.json({
             title: songData.title,
             artist: songData.primary_artists,
@@ -39,7 +47,8 @@ app.get("/song/:id", async (req, res) => {
             download_url: songData.download_url
         });
     } catch (error) {
-        res.status(500).json({ error: "Failed to fetch song details." });
+        console.error("❌ API Error:", error.message);
+        res.status(500).json({ error: "Failed to fetch song details. Check logs for more info!" });
     }
 });
 
@@ -50,14 +59,15 @@ app.get("/stream/:id", async (req, res) => {
     try {
         const response = await axios.get(`https://saavn.dev/api/songs/${songId}`);
         const songData = response.data;
-        
-        if (!songData.download_url) {
+
+        if (!songData || !songData.download_url) {
             return res.status(404).json({ error: "❌ No streamable URL found!" });
         }
 
         request(songData.download_url).pipe(res); // Stream song file to client
     } catch (error) {
-        res.status(500).json({ error: "Failed to stream song. Check server logs!" });
+        console.error("❌ API Error:", error.message);
+        res.status(500).json({ error: "Failed to stream song. Check API response or logs!" });
     }
 });
 
