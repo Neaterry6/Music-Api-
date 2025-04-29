@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const request = require("request");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,7 +22,7 @@ app.get("/search", async (req, res) => {
     }
 });
 
-// 📥 Get Song Details & Download Link
+// 🎵 Get Song Details & Download Link
 app.get("/song/:id", async (req, res) => {
     const songId = req.params.id;
 
@@ -42,7 +43,25 @@ app.get("/song/:id", async (req, res) => {
     }
 });
 
+// 🔊 Stream Song Directly
+app.get("/stream/:id", async (req, res) => {
+    const songId = req.params.id;
+
+    try {
+        const response = await axios.get(`https://saavn.dev/api/songs/${songId}`);
+        const songData = response.data;
+        
+        if (!songData.download_url) {
+            return res.status(404).json({ error: "❌ No streamable URL found!" });
+        }
+
+        request(songData.download_url).pipe(res); // Stream song file to client
+    } catch (error) {
+        res.status(500).json({ error: "Failed to stream song. Check server logs!" });
+    }
+});
+
 // Start Server
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
-})
+});
