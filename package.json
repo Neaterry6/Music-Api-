@@ -1,11 +1,12 @@
 {
-  "name": "song-download-api",
+  "name": "song-stream-api",
   "version": "1.0.0",
-  "description": "Song Download API using JioSaavn",
+  "description": "Song Streaming & Download API using JioSaavn",
   "main": "server.js",
   "dependencies": {
     "express": "^4.17.1",
-    "axios": "^1.3.0"
+    "axios": "^1.3.0",
+    "request": "^2.88.2"
   },
   "scripts": {
     "start": "node server.js"
